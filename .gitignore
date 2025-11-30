@@ -3,3 +3,27 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+
+# ============================================================================
+# ArgoS - .gitignore
+# ============================================================================
+
+# CRITICAL: Secrets file (contains credentials)
+secrets.h
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Arduino/PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+lib/
+.clang_complete
+.gcc-flags.json
