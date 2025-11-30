@@ -70,3 +70,102 @@ The device uses **MQTT** for lightweight and reliable communication.
 ### Topic Structure
 
 - **Telemetry:** `argus/device
+
+
+## 🚀 Getting Started
+
+### 1. Clone Repository
+
+```
+
+git clone https://github.com/your-username/ArgoS.git
+cd ArgoS
+
+```
+
+### 2. Setup Credentials
+
+
+
+```
+# Copy the template
+
+cp secrets_template.h secrets.h
+
+# Edit with your credentials
+
+vim secrets.h  \# or use your preferred editor
+
+```
+
+
+### 3. Configure secrets.h
+
+Edit `secrets.h` with your actual credentials:
+
+```
+
+\#define SECRET_SSID "YourWiFiNetwork"
+\#define SECRET_WIFI_PASSWORD "YourWiFiPassword"
+\#define SECRET_MQTT_SERVER "your.mqtt.broker.com"
+\#define SECRET_MQTT_USER "your_username"
+\#define SECRET_MQTT_PASSWORD "your_password"
+
+```
+
+### 4. Verify .gitignore
+
+Make sure `secrets.h` is NOT tracked:
+
+```
+
+git status
+
+# secrets.h should NOT appear in the list
+
+```
+
+## 📁 Project Structure
+
+```
+
+ArgoS/
+├── ArgoS.ino              \# Main file
+├── config.h               \# Constants and parameters
+├── secrets.h              \# Your credentials (NOT in git)
+├── secrets_template.h     \# Template (safe to commit)
+└── .gitignore            \# Ensures secrets.h is ignored
+
+```
+
+
+## 🐛 Troubleshooting
+
+### "secrets.h: No such file or directory"
+
+Solution: Copy `secrets_template.h` to `secrets.h` and fill in your credentials.
+
+```
+
+cp secrets_template.h secrets.h
+
+```
+
+### secrets.h appears in git status
+
+Solution: Make sure `.gitignore` contains:
+
+```
+
+secrets.h
+
+```
+
+Then remove from git cache:
+
+```
+
+git rm --cached secrets.h
+
+```
+
