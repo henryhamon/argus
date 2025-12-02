@@ -1,6 +1,7 @@
 # ArguS: Automated Remote Guardian Unit for Solar panels
 
 ![Status](https://img.shields.io/badge/Status-Development-yellow)
+![Version](https://img.shields.io/badge/Version-1.0.5-green)
 ![Platform](https://img.shields.io/badge/Platform-ESP32--S3-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -19,12 +20,13 @@
 
 Solar panel efficiency can drop significantly due to environmental factors like dust (soiling), bird droppings, or high temperatures. **ArguS** solves the monitoring problem by deploying a low-power, vision-enabled node directly on the field.
 
-Key capabilities:
-* **Smart Energy Management:** Detects day/night cycles to conserve battery using Deep Sleep.
-* **Environmental Sensing:** Monitors luminosity, particulate matter (dust), temperature, and humidity.
-* **Visual Inspection:** Captures high-resolution images of panel surfaces when anomalies are detected.
-* **M2M Integration:** Communicates via MQTT to a central server to coordinate cleaning operations.
-* **Local Backup:** Stores data on SD Card if connectivity is lost.
+### Key Capabilities:
+* ✅ **Smart Energy Management:** Detects day/night cycles to conserve battery
+* ✅ **Environmental Sensing:** Monitors luminosity, particulate matter (dust), temperature, and humidity
+* ✅ **Visual Inspection:** Captures images of panel surfaces when anomalies are detected
+* ✅ **M2M Integration:** Communicates via MQTT to coordinate cleaning operations
+* ✅ **Local Backup:** SD Card support for data logging (planned)
+* ✅ **Real-time Decision Making:** Edge AI logic for cleaning trigger
 
 ---
 
@@ -60,6 +62,13 @@ To maximize autonomy, ArguS operates on a strict state-machine logic:
     * Connects to Wi-Fi.
     * Publishes telemetry (JSON) and Image buffer via **MQTT**.
 6.  **Sleep:** Enters sleep mode for a configured interval.
+
+---
+
+### Power Consumption:
+- **Day Mode (Active):** ~300mA @ 3.3V
+- **Night Mode (Sleep):** <10mA *(Deep Sleep planned)*
+- **Camera Active:** +150mA peak
 
 ---
 
@@ -168,4 +177,3 @@ Then remove from git cache:
 git rm --cached secrets.h
 
 ```
-
