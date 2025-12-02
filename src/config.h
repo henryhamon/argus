@@ -30,7 +30,11 @@
     #define DEVICE_ID "ArgoS_Station_001"
 #endif
 
-// --- CÂMERA (Freenove S3 WROOM) ---
+// ============================================================================
+// HARDWARE PINOUT
+// ============================================================================
+
+// --- Camera (Freenove ESP32-S3 WROOM) ---
 #define PWDN_GPIO_NUM    -1
 #define RESET_GPIO_NUM   -1
 #define XCLK_GPIO_NUM    15
@@ -44,49 +48,45 @@
 #define Y4_GPIO_NUM      8
 #define Y3_GPIO_NUM      9
 #define Y2_GPIO_NUM      11
-#define VSYNC_GPIO_NUM   6  
+#define VSYNC_GPIO_NUM   6 
 #define HREF_GPIO_NUM    7
 #define PCLK_GPIO_NUM    13
 
-// --- DHT22 ---
-#define DHT_PIN     47      
-#define DHT_TYPE    DHT22   
+// --- Sensors ---
+#define DHT_PIN          47      
+#define DHT_TYPE         DHT22   
 
-// --- BH1750 --- LIGHT
-#define BH1750_ADDR     0x23
-#define I2C_SDA_PIN     2
-#define I2C_SCL_PIN     1
+#define BH1750_ADDR      0x23
+#define I2C_SDA_PIN      2
+#define I2C_SCL_PIN      1
 
-// --- DUST (GP2Y1010AU0F) ---
-#define DUST_LED_PIN    21      // Controle do LED Infravermelho
-#define DUST_VO_PIN     3       // Leitura Analógica (ADC1)
+#define DUST_LED_PIN     21      
+#define DUST_VO_PIN      3      
 
-// Calibração para 3.3V
-// Ajuste este valor se a leitura for muito alta/baixa comparada à realidade
-#define DUST_CALIB      1.1
-#define DUST_OFFSET       0.1   // Tensão residual em Volts
+// ============================================================================
+// OPERATIONAL THRESHOLDS (Business Logic)
+// ============================================================================
 
-// --- OPERATIONAL THRESHOLDS (REGRAS DE NEGÓCIO) ---
+// Light
+#define MIN_LUX_DAY_MODE      1000      // Below this = Night Mode
+#define MIN_LUX_FOR_CLEANING  5000      // Min lux to justify cleaning
+#define MAX_LUX_REFERENCE     100000    // Full sun reference
 
-// Light thresholds
-#define MIN_LUX_DAY_MODE      1000      // Abaixo disso = Modo Noturno
-#define MIN_LUX_FOR_CLEANING  5000      // Mínimo para justificar limpeza
-#define MAX_LUX_REFERENCE     100000    // Referência de sol pleno (para cálculo de eficiência)
+// Environment
+#define DUST_THRESHOLD        150.0     // ug/m3 (High risk)
+#define HUMIDITY_MIN_TRIGGER  60.0      // % (Low humidity increases dust sticking)
+#define DUST_CALIB            1.1       // Calibration factor
+#define DUST_SAMPLES          5         // Moving average window size
 
-// Environmental thresholds
-#define DUST_THRESHOLD        150.0     // μg/m³ (Alto risco)
-#define HUMIDITY_MIN_TRIGGER  60.0      // % (Abaixo disso + poeira = limpeza)
-#define DUST_CALIB            1.1       // Fator de calibração
-#define DUST_SAMPLES          5         // Quantidade de leituras para média móvel
-
-// Performance thresholds
+// Performance
 #define EFFICIENCY_MIN        75.0      // % 
-#define PANEL_RATED_POWER     550.0     // Watts (Potência nominal do painel)
+#define PANEL_RATED_POWER     550.0     // Watts
 
-// Timing parameters (em milissegundos)
-#define INTERVAL_DAY          10000     // 10 seg (TESTE) - Original: 5 min
-#define INTERVAL_NIGHT        30000     // 30 seg (TESTE) - Original: 60 min
-#define DAYS_BETWEEN_CLEAN    7         // Dias mínimos entre limpezas
+// Timing (Milliseconds)
+// Production settings: Day=5min (300000), Night=60min (3600000)
+#define INTERVAL_DAY          10000     // 10 sec (For Testing)
+#define INTERVAL_NIGHT        30000     // 30 sec (For Testing)
+#define DAYS_BETWEEN_CLEAN    7
 
 #endif
 
