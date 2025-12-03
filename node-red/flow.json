@@ -1,0 +1,659 @@
+[
+    {
+        "id": "tab-argus",
+        "type": "tab",
+        "label": "ArguS Dashboard",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "ui-group-env",
+        "type": "ui_group",
+        "name": "Environment",
+        "tab": "ui-tab-argus",
+        "order": 1,
+        "disp": true,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "ui-group-status",
+        "type": "ui_group",
+        "name": "System Status",
+        "tab": "ui-tab-argus",
+        "order": 2,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "ui-group-cam",
+        "type": "ui_group",
+        "name": "Live Camera",
+        "tab": "ui-tab-argus",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "mqtt-dust",
+        "type": "mqtt in",
+        "z": "tab-argus",
+        "name": "Dust (Any Device)",
+        "topic": "argus/+/sensor/dust_density",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "mqtt-broker-hivemq",
+        "nl": false,
+        "rap": false,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 80,
+        "wires": [
+            [
+                "fn-dust-to-number"
+            ]
+        ]
+    },
+    {
+        "id": "fn-dust-to-number",
+        "type": "function",
+        "z": "tab-argus",
+        "name": "toNumber",
+        "func": "msg.payload = Number(msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 80,
+        "wires": [
+            [
+                "ui-dust-gauge",
+                "ui-dust-chart"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-temp",
+        "type": "mqtt in",
+        "z": "tab-argus",
+        "name": "Temp (Any Device)",
+        "topic": "argus/+/sensor/temperature",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "mqtt-broker-hivemq",
+        "nl": false,
+        "rap": false,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 180,
+        "wires": [
+            [
+                "fn-temp-to-number"
+            ]
+        ]
+    },
+    {
+        "id": "fn-temp-to-number",
+        "type": "function",
+        "z": "tab-argus",
+        "name": "toNumber",
+        "func": "msg.payload = Number(msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 180,
+        "wires": [
+            [
+                "ui-temp-gauge"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-hum",
+        "type": "mqtt in",
+        "z": "tab-argus",
+        "name": "Hum (Any Device)",
+        "topic": "argus/+/sensor/humidity",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "mqtt-broker-hivemq",
+        "nl": false,
+        "rap": false,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 240,
+        "wires": [
+            [
+                "fn-hum-to-number"
+            ]
+        ]
+    },
+    {
+        "id": "fn-hum-to-number",
+        "type": "function",
+        "z": "tab-argus",
+        "name": "toNumber",
+        "func": "msg.payload = Number(msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 240,
+        "wires": [
+            [
+                "ui-hum-gauge"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-lux",
+        "type": "mqtt in",
+        "z": "tab-argus",
+        "name": "Lux (Any Device)",
+        "topic": "argus/+/sensor/light_level",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "mqtt-broker-hivemq",
+        "nl": false,
+        "rap": false,
+        "rh": 0,
+        "inputs": 0,
+        "x": 140,
+        "y": 300,
+        "wires": [
+            [
+                "fn-lux-to-number"
+            ]
+        ]
+    },
+    {
+        "id": "fn-lux-to-number",
+        "type": "function",
+        "z": "tab-argus",
+        "name": "toNumber",
+        "func": "msg.payload = Number(msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 300,
+        "wires": [
+            [
+                "ui-lux-gauge",
+                "ui-lux-chart"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-mode",
+        "type": "mqtt in",
+        "z": "tab-argus",
+        "name": "Mode (Any Device)",
+        "topic": "argus/+/status/operation_mode",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "mqtt-broker-hivemq",
+        "nl": false,
+        "rap": false,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 420,
+        "wires": [
+            [
+                "ui-mode-text",
+                "fn-extract-device-id"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-alert",
+        "type": "mqtt in",
+        "z": "tab-argus",
+        "name": "Alert (Any Device)",
+        "topic": "argus/+/alert/clean_needed",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "mqtt-broker-hivemq",
+        "nl": false,
+        "rap": false,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 480,
+        "wires": [
+            [
+                "fn-alert-text"
+            ]
+        ]
+    },
+    {
+        "id": "fn-alert-text",
+        "type": "function",
+        "z": "tab-argus",
+        "name": "Format Alert",
+        "func": "let v = msg.payload;\nif (v === true || v === 1 || v === \"1\" || v === \"true\") {\n    msg.payload = \"CLEANING NEEDED ⚠️\";\n    msg.ui_control = { \"label\": \"CRITICAL ALERT\" }; // Dynamic styling hook\n} else {\n    msg.payload = \"OK\";\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 480,
+        "wires": [
+            [
+                "ui-alert-text"
+            ]
+        ]
+    },
+    {
+        "id": "ui-mode-text",
+        "type": "ui_text",
+        "z": "tab-argus",
+        "group": "ui-group-status",
+        "order": 2,
+        "width": 6,
+        "height": 1,
+        "name": "Mode",
+        "label": "Operation Mode",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": "",
+        "color": "#000000",
+        "x": 450,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "ui-alert-text",
+        "type": "ui_text",
+        "z": "tab-argus",
+        "group": "ui-group-status",
+        "order": 3,
+        "width": 6,
+        "height": 1,
+        "name": "Alert",
+        "label": "Cleaning Status",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": "",
+        "color": "#000000",
+        "x": 600,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "ui-dust-gauge",
+        "type": "ui_gauge",
+        "z": "tab-argus",
+        "name": "Dust (µg/m³)",
+        "group": "ui-group-env",
+        "order": 1,
+        "width": 4,
+        "height": 4,
+        "gtype": "gage",
+        "title": "Dust (µg/m³)",
+        "label": "µg/m³",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "600",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "50",
+        "seg2": "150",
+        "diff": false,
+        "className": "",
+        "x": 690,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "ui-temp-gauge",
+        "type": "ui_gauge",
+        "z": "tab-argus",
+        "name": "Temperature (°C)",
+        "group": "ui-group-env",
+        "order": 2,
+        "width": 4,
+        "height": 4,
+        "gtype": "gage",
+        "title": "Temperature (°C)",
+        "label": "°C",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "60",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "25",
+        "seg2": "35",
+        "diff": false,
+        "className": "",
+        "x": 610,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "ui-hum-gauge",
+        "type": "ui_gauge",
+        "z": "tab-argus",
+        "name": "Humidity (%)",
+        "group": "ui-group-env",
+        "order": 3,
+        "width": 4,
+        "height": 4,
+        "gtype": "gage",
+        "title": "Humidity (%)",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#ca3838",
+            "#e6e600",
+            "#00b500"
+        ],
+        "seg1": "30",
+        "seg2": "70",
+        "diff": false,
+        "className": "",
+        "x": 610,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "ui-lux-gauge",
+        "type": "ui_gauge",
+        "z": "tab-argus",
+        "name": "Light (lux)",
+        "group": "ui-group-env",
+        "order": 4,
+        "width": 4,
+        "height": 4,
+        "gtype": "gage",
+        "title": "Light (lux)",
+        "label": "lux",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100000",
+        "colors": [
+            "#0000ff",
+            "#00b500",
+            "#e6e600"
+        ],
+        "seg1": "1000",
+        "seg2": "20000",
+        "diff": false,
+        "className": "",
+        "x": 600,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "ui-dust-chart",
+        "type": "ui_chart",
+        "z": "tab-argus",
+        "name": "Dust History",
+        "group": "ui-group-env",
+        "order": 5,
+        "width": 12,
+        "height": 4,
+        "label": "Dust History",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "No data",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "600",
+        "removeOlder": "60",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 610,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ui-lux-chart",
+        "type": "ui_chart",
+        "z": "tab-argus",
+        "name": "Light History",
+        "group": "ui-group-env",
+        "order": 6,
+        "width": 12,
+        "height": 4,
+        "label": "Light History",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "No data",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "100000",
+        "removeOlder": "60",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#ff7f0e",
+            "#1f77b4",
+            "#2ca02c",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 610,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "mqtt-camera",
+        "type": "mqtt in",
+        "z": "tab-argus",
+        "name": "Camera Stream",
+        "topic": "argus/+/camera/#",
+        "qos": "1",
+        "datatype": "auto",
+        "broker": "mqtt-broker-hivemq",
+        "nl": false,
+        "rap": false,
+        "rh": 0,
+        "inputs": 0,
+        "x": 140,
+        "y": 620,
+        "wires": [
+            [
+                "fn-image-assembler"
+            ]
+        ]
+    },
+    {
+        "id": "fn-image-assembler",
+        "type": "function",
+        "z": "tab-argus",
+        "name": "Image Assembler",
+        "func": "// Variáveis de contexto para segurar o buffer\n// Usa flow.get para persistir entre mensagens\nlet imageBuffer = flow.get('currentImageBuffer') || Buffer.alloc(0);\n\n// Identifica se é metadado (control) ou dado binário (chunk)\nlet isControl = msg.topic.includes(\"control\");\nlet isData = msg.topic.includes(\"image_chunk\");\n\nif (isControl) {\n    let payload = msg.payload;\n    // Se for string, tenta converter para JSON\n    if (typeof payload === \"string\") {\n        try {\n            payload = JSON.parse(payload);\n        } catch(e) {}\n    }\n\n    if (payload.status === \"start\") {\n        // INICIO: Limpa o buffer\n        imageBuffer = Buffer.alloc(0);\n        flow.set('currentImageBuffer', imageBuffer);\n        node.status({fill:\"blue\", shape:\"dot\", text:\"Receiving...\"});\n        return null; // Não envia nada ainda\n    }\n    else if (payload.status === \"end\") {\n        // FIM: Converte buffer para Base64 e envia\n        let b64 = imageBuffer.toString('base64');\n        msg.payload = \"data:image/jpeg;base64,\" + b64;\n        \n        node.status({fill:\"green\", shape:\"dot\", text:\"Image Ready\"});\n        return msg; \n    }\n}\nelse if (isData) {\n    // DADO BINÁRIO: Acumula no buffer\n    let chunk = msg.payload;\n    if (!Buffer.isBuffer(chunk)) {\n        chunk = Buffer.from(chunk);\n    }\n    imageBuffer = Buffer.concat([imageBuffer, chunk]);\n    flow.set('currentImageBuffer', imageBuffer);\n    return null;\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 620,
+        "wires": [
+            [
+                "ui-cam-template"
+            ]
+        ]
+    },
+    {
+        "id": "ui-cam-template",
+        "type": "ui_template",
+        "z": "tab-argus",
+        "group": "ui-group-cam",
+        "name": "Camera Viewer",
+        "order": 1,
+        "width": 6,
+        "height": 5,
+        "format": "<div style=\"width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column;\">\n    <div ng-if=\"!msg.payload\" style=\"color: #666;\">\n        <i class=\"fa fa-camera\" style=\"font-size: 48px; margin-bottom: 10px;\"></i>\n        <br>\n        Waiting for alert image...\n    </div>\n    <img ng-if=\"msg.payload\" src=\"{{msg.payload}}\" style=\"max-width: 100%; max-height: 100%; object-fit: contain; border: 2px solid #ccc;\">\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 620,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fn-extract-device-id",
+        "type": "function",
+        "z": "tab-argus",
+        "name": "Get Device ID",
+        "func": "// Topic: argus/DEVICE_ID/status/mode\nlet parts = msg.topic.split(\"/\");\n// O Device ID é o segundo elemento (índice 1)\nif (parts.length > 2) {\n    msg.payload = parts[1];\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 380,
+        "wires": [
+            [
+                "ui-device-id"
+            ]
+        ]
+    },
+    {
+        "id": "ui-device-id",
+        "type": "ui_text",
+        "z": "tab-argus",
+        "group": "ui-group-status",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "name": "Device ID",
+        "label": "Connected Device",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": "",
+        "color": "#1f77b4",
+        "x": 610,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "mqtt-broker-hivemq",
+        "type": "mqtt-broker",
+        "name": "HiveMQ Cloud",
+        "broker": "220344b467ec47b7964f5fcf9327e1a3.s1.eu.hivemq.cloud",
+        "port": "8883",
+        "tls": "tls-config-hivemq",
+        "clientid": "argus_dashboard_client",
+        "autoConnect": true,
+        "usetls": true,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "ui-tab-argus",
+        "type": "ui_tab",
+        "name": "ArguS",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "tls-config-hivemq",
+        "type": "tls-config",
+        "name": "HiveMQ TLS",
+        "cert": "",
+        "key": "",
+        "ca": "",
+        "certname": "",
+        "keyname": "",
+        "caname": "",
+        "servername": "220344b467ec47b7964f5fcf9327e1a3.s1.eu.hivemq.cloud",
+        "verifyservercert": false,
+        "alpnprotocol": ""
+    }
+]
