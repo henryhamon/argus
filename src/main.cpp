@@ -18,10 +18,29 @@
 #include "config.h"
 #include "sensor_driver.h"
 #include "core.h"
+#include "mqtt_driver.h"
 
 // Global State
 SystemMode currentMode = MODE_BOOT;
 unsigned long lastCheckTime = 0;
+
+void setupWiFi() {
+    Serial.print("Connecting to WiFi: ");
+    Serial.println(SECRET_SSID);
+    WiFi.begin(SECRET_SSID, SECRET_WIFI_PASSWORD);
+
+    int attempts = 0;
+    while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+        delay(500);
+        Serial.print(".");
+        attempts++;
+    }
+    if(WiFi.status() == WL_CONNECTED) {
+        Serial.println("\nWiFi Connected.");
+    } else {
+        Serial.println("\nWiFi Failed (Will retry later).");
+    }
+}
 
 // Camera Init (Kept here as it's a core system component)
 bool initCamera() {
@@ -72,6 +91,9 @@ void setup() {
     } else {
         logSystem("❌ Camera Failed");
     }
+
+    setupWiFi();
+    initMQTT();
     
     logSystem("System Ready. Waiting for cycle...");
 }
@@ -79,6 +101,8 @@ void setup() {
 void loop() {
     unsigned long now = millis();
     
+    loopMQTT();
+
     // 1. Continuous Light Monitoring (Mode Switching)
     float currentLux = readLightLevel();
     SystemMode newMode = determineOperationMode(currentLux);
@@ -122,6 +146,10 @@ void loop() {
             logSystem(logMsg);
             
             logSystem("Eff: " + String(status.efficiency, 1) + "%");
+
+            if (publishTelemetry(status)) {
+                Serial.println("📤 MQTT Sent");
+            }
 
             // 3. DECISION CORE EXECUTION
             evaluateSystemState(status);

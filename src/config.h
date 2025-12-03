@@ -88,5 +88,28 @@
 #define INTERVAL_NIGHT        30000     // 30 sec (For Testing)
 #define DAYS_BETWEEN_CLEAN    7
 
+// ============================================================================
+// MQTT CONFIGURATION
+// ============================================================================
+
+// Base Topic Structure: argus/{device_id}/{category}/{metric}
+#define TOPIC_PREFIX "argus/"
+
+// Sub-topics (suffix)
+#define TOPIC_DUST        "sensor/dust_density"
+#define TOPIC_TEMP        "sensor/temperature"
+#define TOPIC_HUM         "sensor/humidity"
+#define TOPIC_LUX         "sensor/light_level"
+#define TOPIC_ALERT       "alert/clean_needed"
+#define TOPIC_MODE        "status/operation_mode"
+
+// Camera Topics
+#define TOPIC_CAM_CTRL    "camera/control"     // JSON metadata (start/end)
+#define TOPIC_CAM_DATA    "camera/image_chunk" // Binary data
+#define TOPIC_CAM_ACK     "camera/ack"         // Command from Dashboard to ESP
+
+// Image Config
+#define IMG_CHUNK_SIZE    2048  // 2KB per chunk (safe for HiveMQ free tier)
+
 #endif
 
