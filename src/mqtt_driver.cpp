@@ -60,7 +60,11 @@ void initMQTT() {
 
     client.setServer(SECRET_MQTT_SERVER, SECRET_MQTT_PORT);
     client.setCallback(callback);
-    client.setBufferSize(MQTT_MAX_PACKET_SIZE); 
+    if (client.setBufferSize(MQTT_MAX_PACKET_SIZE)) {
+        Serial.printf("📦 MQTT Buffer Size: %d bytes\n", MQTT_MAX_PACKET_SIZE);
+    } else {
+        Serial.println("❌ Failed to set MQTT Buffer Size");
+    }
 }
 
 void reconnect() {
@@ -73,6 +77,9 @@ void reconnect() {
         } else {
             Serial.print(" failed, rc=");
             Serial.print(client.state());
+            char errBuf[100];
+            espClient.lastError(errBuf, 100);
+            Serial.printf(" (SSL: %s)\n", errBuf);
             Serial.println(" try again in next loop");
         }
     }
@@ -113,6 +120,8 @@ bool publishImage(const uint8_t* imageBuffer, size_t length) {
     if (!client.connected()) return false;
 
     Serial.printf("📸 Starting Image Upload (%u bytes)...\n", length);
+    Serial.printf("   Chunk Size: %d bytes\n", IMG_CHUNK_SIZE);
+    Serial.printf("   MQTT Buffer Size: %d bytes\n", client.getBufferSize());
 
     // 1. Send START Metadata (JSON)
     StaticJsonDocument<200> doc;
@@ -121,22 +130,44 @@ bool publishImage(const uint8_t* imageBuffer, size_t length) {
     doc["device"] = SECRET_MQTT_CLIENT_ID;
     char jsonBuffer[200];
     serializeJson(doc, jsonBuffer);
+    if (client.publish(getTopic(TOPIC_CAM_CTRL), jsonBuffer)) {
+        Serial.println("   ✅ Header START sent.");
+    } else {
+        Serial.println("   ❌ Header START fail.");
+        return false;
+    }
     client.publish(getTopic(TOPIC_CAM_CTRL), jsonBuffer);
 
     // 2. Stream Binary Chunks
     size_t offset = 0;
     size_t chunkIndex = 0;
+    int errorCount = 0;
+
+    Serial.print(" Sending [");
     
     while (offset < length) {
         size_t chunkSize = length - offset;
         if (chunkSize > IMG_CHUNK_SIZE) chunkSize = IMG_CHUNK_SIZE;
 
-        client.publish(getTopic(TOPIC_CAM_DATA), &imageBuffer[offset], chunkSize);
+        bool sent = client.publish(getTopic(TOPIC_CAM_DATA), &imageBuffer[offset], chunkSize);
+        if (sent) {
+            Serial.print("#"); // # Success
+        } else {
+            Serial.print("X"); // X Fail
+            errorCount++;
+        }
         offset += chunkSize;
         chunkIndex++;
         
-        delay(5); 
+        delay(20); 
         client.loop(); 
+    }
+    Serial.println("]");
+
+    if (errorCount > 0) {
+        Serial.printf("   ⚠️ ATENTTION: %d failure chunks!\n", errorCount);
+    } else {
+        Serial.printf("   ✅ All %d chunks sended.\n", chunkIndex );
     }
 
     // 3. Send END Metadata
@@ -146,7 +177,12 @@ bool publishImage(const uint8_t* imageBuffer, size_t length) {
     
     serializeJson(doc, jsonBuffer);
     client.publish(getTopic(TOPIC_CAM_CTRL), jsonBuffer);
+    if (client.publish(getTopic(TOPIC_CAM_CTRL), jsonBuffer)) {
+        Serial.println("   ✅ Header END sent.");
+    } else {
+        Serial.println("   ❌ Feader END Fail.");
+    }
 
     Serial.println("📸 Image Upload Complete.");
-    return true;
+    return (errorCount == 0);
 }
