@@ -2,6 +2,7 @@
 #define MQTT_DRIVER_H
 
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include "config.h"

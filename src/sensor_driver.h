@@ -22,4 +22,10 @@ float readLightLevel();
 // Complex function: Handles LED switching, timing, ADC reading, and smoothing
 float readDustSensorSmooth();
 
+// Simulation Setters (Used by Serial Command parser)
+void setSimTemp(float v);
+void setSimHum(float v);
+void setSimLux(float v);
+void setSimDust(float v);
+
 #endif

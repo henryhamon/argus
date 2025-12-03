@@ -8,8 +8,8 @@
 * 
 * ============================================================================
 * 
-* Version: 1.0.5
-* Date: 2025-11-22
+* Version: 1.0.6
+* Date: 2025-12-02
 * ============================================================================
 */
 
@@ -23,6 +23,40 @@
 // Global State
 SystemMode currentMode = MODE_BOOT;
 unsigned long lastCheckTime = 0;
+
+// --- SERIAL COMMAND PARSER (For Simulation) ---
+void checkSerialCommands() {
+    if (Serial.available() > 0) {
+        String cmd = Serial.readStringUntil('\n');
+        cmd.trim(); 
+        
+        if (cmd.length() == 0) return;
+
+        if (cmd.startsWith("set dust ")) {
+            float val = cmd.substring(9).toFloat();
+            setSimDust(val);
+            Serial.println("CMD: Dust set to " + String(val));
+        }
+        else if (cmd.startsWith("set lux ")) {
+            float val = cmd.substring(8).toFloat();
+            setSimLux(val);
+            Serial.println("CMD: Lux set to " + String(val));
+        }
+        else if (cmd.startsWith("set hum ")) {
+            float val = cmd.substring(8).toFloat();
+            setSimHum(val);
+            Serial.println("CMD: Humidity set to " + String(val));
+        }
+        else if (cmd.startsWith("set days ")) {
+            int val = cmd.substring(9).toInt();
+            setDaysSinceClean(val);
+            Serial.println("CMD: Days since clean set to " + String(val));
+        }
+        else {
+            Serial.println("Unknown command. Use: set dust X, set lux X, set hum X, set days X");
+        }
+    }
+}
 
 void setupWiFi() {
     Serial.print("Connecting to WiFi: ");
@@ -59,8 +93,8 @@ bool initCamera() {
     config.pin_pclk = PCLK_GPIO_NUM;
     config.pin_vsync = VSYNC_GPIO_NUM;
     config.pin_href = HREF_GPIO_NUM;
-    config.pin_sscb_sda = SIOD_GPIO_NUM;
-    config.pin_sscb_scl = SIOC_GPIO_NUM;
+    config.pin_sccb_sda = SIOD_GPIO_NUM; 
+    config.pin_sccb_scl = SIOC_GPIO_NUM;
     config.pin_pwdn = PWDN_GPIO_NUM;
     config.pin_reset = RESET_GPIO_NUM;
     config.xclk_freq_hz = 20000000;
@@ -78,6 +112,7 @@ bool initCamera() {
     return (err == ESP_OK);
 }
 
+// --- MAIN SETUP ---
 void setup() {
     delay(3000);
     Serial.begin(115200);
@@ -85,7 +120,6 @@ void setup() {
 
     // 1. Hardware Init
     initSensors();
-    
     if (initCamera()) {
         logSystem("✅ Camera Initialized");
     } else {
@@ -98,10 +132,12 @@ void setup() {
     logSystem("System Ready. Waiting for cycle...");
 }
 
+// --- MAIN LOOP ---
 void loop() {
     unsigned long now = millis();
     
     loopMQTT();
+    checkSerialCommands(); // Listen for 'set' commands
 
     // 1. Continuous Light Monitoring (Mode Switching)
     float currentLux = readLightLevel();
@@ -109,8 +145,16 @@ void loop() {
 
     if (newMode != currentMode) {
         currentMode = newMode;
-        if (currentMode == MODE_DAY) logSystem("☀️ MODE CHANGE: DAY");
-        else logSystem("🌙 MODE CHANGE: NIGHT");
+        String modeStr = (currentMode == MODE_DAY) ? "DAY_MODE" : "NIGHT_MODE";
+        logSystem("MODE CHANGE: " + modeStr);
+        publishState(modeStr);
+    }
+
+    if (newMode != currentMode) {
+        currentMode = newMode;
+        String modeStr = (currentMode == MODE_DAY) ? "☀️ DAY_MODE" : "🌙 NIGHT_MODE";
+        logSystem("MODE CHANGE: " + modeStr);
+        publishState(modeStr);
     }
 
     // 2. Cycle Timing
@@ -125,34 +169,40 @@ void loop() {
         status.mode = currentMode;
 
         if (currentMode == MODE_NIGHT) {
+            publishTelemetry(status);
             logSystem("Night Monitor - Lux: " + String(status.lux));
         } 
         else {
-            // Full Day Cycle
+            // Day Cycle
             status.temp = readTemperature();
             status.humidity = readHumidity();
             
-            // Fill dust buffer (5 quick samples)
+            // Fill dust buffer
             for(int k=0; k<5; k++) { readDustSensorSmooth(); delay(20); }
             status.dust = readDustSensorSmooth();
             
-            status.efficiency = calculateEfficiency(status.lux);
-
-            // Log Data
-            String logMsg = "Env: " + String(status.temp, 1) + "C | " + 
-                            String(status.humidity, 1) + "% | " + 
-                            String(status.lux, 0) + " lx | Dust: " + 
-                            String(status.dust, 0) + " ug/m3";
+            // Log & Telemetry
+            String logMsg = "Env: " + String(status.temp, 1) + "C | " + String(status.lux, 0) + " lx";
             logSystem(logMsg);
-            
-            logSystem("Eff: " + String(status.efficiency, 1) + "%");
+            publishTelemetry(status);
 
-            if (publishTelemetry(status)) {
-                Serial.println("📤 MQTT Sent");
+            // 3. DECISION LOGIC (AGORA USANDO O RETORNO BOOL)
+            // Não repetimos a lógica aqui. O evaluateSystemState já decidiu.
+            bool cleaningTriggered = evaluateSystemState(status);
+
+            // Publica o estado do alerta no MQTT
+            publishAlert(cleaningTriggered, "Auto-Logic");
+
+            if (cleaningTriggered) {
+                logSystem("📸 CAPTURING EVIDENCE...");
+                camera_fb_t * fb = esp_camera_fb_get();
+                if (fb) {
+                    publishImage(fb->buf, fb->len);
+                    esp_camera_fb_return(fb);
+                } else {
+                    logSystem("❌ Camera Capture Failed");
+                }
             }
-
-            // 3. DECISION CORE EXECUTION
-            evaluateSystemState(status);
         }
     }
 }

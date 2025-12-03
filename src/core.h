@@ -17,16 +17,16 @@ struct SystemStatus {
     SystemMode mode;
 };
 
-// Calculates theoretical panel efficiency
-float calculateEfficiency(float lux);
-
 // Main logic engine: Evaluates inputs and triggers alerts if necessary
-void evaluateSystemState(SystemStatus status);
+bool evaluateSystemState(SystemStatus status);
 
 // Helper to determine Day/Night based on Lux
 SystemMode determineOperationMode(float lux);
 
 // Helper to format logs
 void logSystem(String message);
+
+// Test helper: Force days since clean
+void setDaysSinceClean(int days);
 
 #endif

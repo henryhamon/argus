@@ -32,5 +32,4 @@
 
 #define SECRET_MQTT_CLIENT_ID "ArgoS_Station_001"
 
-
  #endif // ARDUINO_SECRETS_H

@@ -1,12 +1,10 @@
 #include "mqtt_driver.h"
+#include <time.h>
 
-WiFiClient espClient;
+WiFiClientSecure espClient;
 PubSubClient client(espClient);
-
-// Buffer interno para montagem de tópicos dinâmicos
 char topicBuffer[128];
 
-// Helper para montar tópico: "argus/ID_DO_DEVICE/topic"
 const char* getTopic(const char* suffix) {
     snprintf(topicBuffer, sizeof(topicBuffer), "%s%s/%s", TOPIC_PREFIX, SECRET_MQTT_CLIENT_ID, suffix);
     return topicBuffer;
@@ -24,24 +22,53 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.println();
 }
 
+void syncTime() {
+    Serial.print("⏳ NTP Sync...");
+    configTime(0, 0, "pool.ntp.org", "time.nist.gov"); 
+    
+    time_t now = time(nullptr);
+    int retry = 0;
+    while (now < 100000 && retry < 20) {
+        delay(500);
+        Serial.print(".");
+        now = time(nullptr);
+        retry++;
+    }
+    
+    if (now > 100000) {
+        Serial.println(" OK!");
+    } else {
+        Serial.println(" Failed (Time is wrong, SSL might fail)");
+    }
+}
+
 void initMQTT() {
+    syncTime();
+
+    espClient.setInsecure();
+    espClient.setTimeout(15);
+
+    Serial.print("🔍 DNS check: ");
+    IPAddress ip;
+    if(WiFi.hostByName(SECRET_MQTT_SERVER, ip)) {
+        Serial.print("OK (");
+        Serial.print(ip);
+        Serial.println(")");
+    } else {
+        Serial.println("❌ DNS FAIL! Check secrets.h");
+    }
+
     client.setServer(SECRET_MQTT_SERVER, SECRET_MQTT_PORT);
     client.setCallback(callback);
-    // Aumenta o buffer interno da lib para suportar JSONs grandes e chunks
     client.setBufferSize(MQTT_MAX_PACKET_SIZE); 
 }
 
 void reconnect() {
     if (!client.connected()) {
         Serial.print("📡 Connecting to HiveMQ...");
-        // Tenta conectar usando o ID do secrets
         if (client.connect(SECRET_MQTT_CLIENT_ID, SECRET_MQTT_USER, SECRET_MQTT_PASSWORD)) {
             Serial.println(" Connected!");
-            
-            // Subscreve em tópicos de comando (para ACK futuro)
             client.subscribe(getTopic(TOPIC_CAM_ACK));
-            
-            // Publica status inicial
             client.publish(getTopic(TOPIC_MODE), "BOOT_ONLINE");
         } else {
             Serial.print(" failed, rc=");
@@ -63,7 +90,6 @@ void loopMQTT() {
 bool publishTelemetry(SystemStatus status) {
     if (!client.connected()) return false;
 
-    // Publica em tópicos separados conforme solicitado
     client.publish(getTopic(TOPIC_TEMP), String(status.temp, 1).c_str());
     client.publish(getTopic(TOPIC_HUM), String(status.humidity, 1).c_str());
     client.publish(getTopic(TOPIC_LUX), String(status.lux, 0).c_str());
@@ -79,14 +105,7 @@ bool publishState(String mode) {
 
 bool publishAlert(bool cleanNeeded, String reason) {
     if (!client.connected()) return false;
-    
-    // Envia true/false
     client.publish(getTopic(TOPIC_ALERT), cleanNeeded ? "true" : "false");
-    
-    // Opcional: Enviar a razão em um tópico de debug
-    if (cleanNeeded) {
-        client.publish(getTopic("status/last_alert_reason"), reason.c_str());
-    }
     return true;
 }
 
@@ -100,7 +119,6 @@ bool publishImage(const uint8_t* imageBuffer, size_t length) {
     doc["status"] = "start";
     doc["size"] = length;
     doc["device"] = SECRET_MQTT_CLIENT_ID;
-    
     char jsonBuffer[200];
     serializeJson(doc, jsonBuffer);
     client.publish(getTopic(TOPIC_CAM_CTRL), jsonBuffer);
@@ -113,15 +131,12 @@ bool publishImage(const uint8_t* imageBuffer, size_t length) {
         size_t chunkSize = length - offset;
         if (chunkSize > IMG_CHUNK_SIZE) chunkSize = IMG_CHUNK_SIZE;
 
-        // Publica o pedaço binário
         client.publish(getTopic(TOPIC_CAM_DATA), &imageBuffer[offset], chunkSize);
-        
         offset += chunkSize;
         chunkIndex++;
         
-        // Pequeno delay para não afogar o buffer do modem WiFi
         delay(5); 
-        client.loop(); // Mantém o MQTT vivo durante o envio
+        client.loop(); 
     }
 
     // 3. Send END Metadata
